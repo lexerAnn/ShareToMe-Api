@@ -18,9 +18,36 @@ const link = {
     link: checkLink
 }
 
-router.post('/add-link', verifyUser, (req, res, next)=> {
+router.get('/links', verifyUser, (req, res, next) => {
+    const accountId = res.locals.accountId
+
+    db.any("SELECT * FROM notes WHERE account_id = $1", accountId)
+        .then(data => {
+            const response = new ApiResponse(
+                "success",
+                "Fetch successfully",
+                data,
+                ""
+            )
+            res.status(200).json({
+                response
+            })
+        })
+        .catch(error => {
+            const response = new ApiResponse(
+                "error",
+                "An error occurred",
+                "",
+                ""
+            )
+            console.log(error)
+            res.status(501).json({ response })
+        })
+
+})
+
+router.post('/add-link', verifyUser, checkSchema(link),(req, res, next)=> {
     const accountId = res.locals.accountId; // Access accountId from res.locals
-    console.log("AccountId" + accountId)
 
     const link = req.body['link']
     console.log(link)
@@ -65,9 +92,6 @@ router.post('/add-link', verifyUser, (req, res, next)=> {
                     console.log(error)
                     res.status(501).json({ response })
                 });
-
-
-
         })
     }
 })
