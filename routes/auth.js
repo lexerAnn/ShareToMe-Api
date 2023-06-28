@@ -7,6 +7,7 @@ const {checkSchema, validationResult} = require('express-validator');
 const ErrorResponse = require('../utils/ErrorResponse');
 const tokenServices = require("../services/tokenServices");
 const {ApiResponse} = require("../utils/ApiResonse");
+const {AuthResponse} = require("../utils/AuthResponse");
 
 require('dotenv').config();
 
@@ -90,13 +91,33 @@ function performLoginAuth(req, res, next) {
                             const tokens = await tokenServices.generateAuthTokens(result.id);
 
                             res.header("x-auth-token", JSON.stringify(tokens));
-                            return res.status(200).json({
-                                message: "Login successful",
-                            })
+
+                            const authResponse = new AuthResponse(
+                                tokens.accessToken,
+                                tokens.refreshToken
+                            )
+
+                            const auth = {
+                                auth: authResponse
+                            }
+                            const response = new ApiResponse(
+                                "success",
+                                "Login successful",
+                                auth,
+                                ""
+                            )
+
+                            return res.status(200).json(response)
                         } else {
-                            return res.status(401).json({
-                                message: "Unauthenticated Failed",
-                            })
+
+                            const response = new ApiResponse(
+                                "failed",
+                                "Unauthenticated Failed",
+                                "error",
+                                ""
+                            )
+
+                            return res.status(401).json(response)
                         }
 
                     })

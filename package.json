@@ -19,6 +19,7 @@
     "jsonwebtoken": "^9.0.0",
     "luxon": "^3.3.0",
     "pg-promise": "^11.5.0",
+    "puppeteer": "^20.7.3",
     "request-promise": "^4.2.6"
   }
 }

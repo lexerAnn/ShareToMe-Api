@@ -8,6 +8,8 @@ const { JSDOM } = require('jsdom');
 const {db} = require("../db/connections");
 const rp = require('request-promise');
 const {ApiResponse} = require("../utils/ApiResonse");
+const puppeteer = require('puppeteer');
+
 
 
 
@@ -72,12 +74,19 @@ router.post('/add-link', verifyUser, (req, res, next)=> {
 
 async function fetchURLTitle(url) {
     try {
-        const html = await rp(url);
-        const dom = new JSDOM(html);
-        const title = dom.window.document.querySelector('title').textContent;
+        const browser = await puppeteer.launch({
+            headless: 'new',
+            // `headless: true` (default) enables old Headless;
+            // `headless: 'new'` enables new Headless;
+            // `headless: false` enables “headful” mode.
+        });
+        const page = await browser.newPage();
+        await page.goto(url);
+        const title = await page.title();
+        await browser.close();
         return title;
     } catch (error) {
-        console.error('Error fetching URL title:', ßerror);
+        console.error('Error fetching URL title', error);
     }
 }
 module.exports = router
