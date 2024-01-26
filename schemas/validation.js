@@ -22,7 +22,15 @@ const checkLink = {
     errorMessage: 'Enter a valid URL'
 }
 
+const linkIdSchema = {
+    link_id: {
+        in: ['body'], // specify that this field is expected in the body of the request
+        errorMessage: 'Invalid link_id', // error message if validation fails
+    },
+    // ... include other fields if necessary
+};
 
 
 
-module.exports = {checkEmail, checkPassword, checkLink}
+
+module.exports = {checkEmail, checkPassword, checkLink, linkIdSchema}

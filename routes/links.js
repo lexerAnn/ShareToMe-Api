@@ -1,7 +1,7 @@
 const express = require('express')
 const {verifyUser} = require("../utils/authUtil");
 const {checkSchema, validationResult} = require("express-validator");
-const {checkLink} = require("../schemas/validation");
+const {checkLink,  linkIdSchema} = require("../schemas/validation");
 const router = express.Router();
 const { DateTime } = require('luxon');
 const { JSDOM } = require('jsdom');
@@ -12,10 +12,12 @@ const puppeteer = require('puppeteer');
 
 
 
-
-
 const link = {
     link: checkLink
+}
+
+const linkId = {
+    linkId: link,
 }
 
 router.get('/links', verifyUser, (req, res, next) => {
@@ -29,9 +31,9 @@ router.get('/links', verifyUser, (req, res, next) => {
                 data,
                 ""
             )
-            res.status(200).json({
+            res.status(200).json(
                 response
-            })
+            )
         })
         .catch(error => {
             const response = new ApiResponse(
@@ -41,10 +43,49 @@ router.get('/links', verifyUser, (req, res, next) => {
                 ""
             )
             console.log(error)
-            res.status(501).json({ response })
+            res.status(501).json( response )
         })
 
 })
+
+router.post('/delete-link/:link_id', verifyUser, checkSchema(linkIdSchema), (req, res, next) => {
+    const accountId = res.locals.accountId;
+    const linkId = req.params.link_id;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()){
+        res.status(400).json({  message: errors.array()[0]['msg'] });
+    } else {
+        db.oneOrNone('SELECT 1 FROM notes WHERE id = $1 AND account_id = $2', [linkId, accountId])
+            .then(data => {
+                if (!data){
+                    return res.status(404).json({ message: 'Link not found' });
+                }
+                return db.none('DELETE FROM notes WHERE id = $1 AND account_id = $2', [linkId, accountId])
+            })
+            .then( _ => {
+                const response = new ApiResponse(
+                    "success",
+                    "Link Deleted Successfully",
+                    `${linkId}`,
+                    ""
+                )
+                res.status(200).json(
+                    response
+                )
+            })
+            .catch(error => {
+                const response = new ApiResponse(
+                    "error",
+                    "An error occurred",
+                    "",
+                    ""
+                )
+                console.log(error)
+                res.status(501).json( response )
+            });
+    }
+});
 
 router.post('/add-link', verifyUser, checkSchema(link),(req, res, next)=> {
     const accountId = res.locals.accountId; // Access accountId from res.locals
@@ -78,9 +119,9 @@ router.post('/add-link', verifyUser, checkSchema(link),(req, res, next)=> {
                         ""
                     )
 
-                    res.status(200).json({
+                    res.status(200).json(
                         response
-                    })
+                    )
                 })
                 .catch(error => {
                     const response = new ApiResponse(
@@ -90,7 +131,7 @@ router.post('/add-link', verifyUser, checkSchema(link),(req, res, next)=> {
                         ""
                     )
                     console.log(error)
-                    res.status(501).json({ response })
+                    res.status(501).json( response )
                 });
         })
     }
@@ -105,7 +146,7 @@ async function fetchURLTitle(url) {
             // `headless: false` enables “headful” mode.
         });
         const page = await browser.newPage();
-        await page.goto(url);
+        await page.goto(url, { waitUntil: 'domcontentloaded' });
         const title = await page.title();
         await browser.close();
         return title;
