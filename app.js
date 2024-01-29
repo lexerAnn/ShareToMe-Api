@@ -12,6 +12,7 @@ const noteRouter = require('./routes/links');
 app.use('/auth', authRouter);
 app.use('/', indexRouter);
 app.use('/note', noteRouter);
+//Testing this CL/CD
 
 
 module.exports = app;
