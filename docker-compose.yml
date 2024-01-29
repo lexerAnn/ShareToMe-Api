@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  db:
+    image: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DATABASE: postgres
+      POSTGRES_PASSWORD: r7gk60
+    ports:
+      - '2435:5432'
+    volumes:
+      - ./db/script:/docker-entrypoint-initdb.d
+  app:
+    container_name: rest
+    image: rest-share-api
+    ports:
+      - '8080:4000'
+    depends_on:
+      - db
+

@@ -1,0 +1,18 @@
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Deploy to DigitalOcean
+        run: ssh root@137.184.3.167 'cd /Users/leslieannan/backend/shareToMe-api && git pull origin master'
+        env:
+          DEPLOY_KEY: ${{ ShareToMeApi1 }}
